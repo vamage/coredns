@@ -3,6 +3,7 @@ package doh
 import (
 	"context"
 	"crypto/tls"
+	"net/http"
 	"time"
 
 	"github.com/coredns/coredns/plugin"
@@ -22,6 +23,8 @@ type doh struct {
 
 	from    string
 	ignored []string
+
+	transport *http.Transport
 
 	tlsConfig     *tls.Config
 	tlsServerName string
@@ -93,8 +96,13 @@ func (g *doh) ServeDNS(ctx context.Context, w dns.ResponseWriter, r *dns.Msg) (i
 
 // Newdoh returns a new doh.
 func newdoh() *doh {
+	tr := &http.Transport{
+		IdleConnTimeout:    30 * time.Second,
+		DisableCompression: true,
+	}
 	g := &doh{
 		p: new(policy.Random),
+		transport: tr,
 	}
 	return g
 }

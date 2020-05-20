@@ -3,6 +3,8 @@ package doh
 import (
 	"crypto/tls"
 	"fmt"
+	"net/http"
+	"time"
 
 	"github.com/coredns/coredns/core/dnsserver"
 	"github.com/coredns/coredns/plugin"
@@ -89,13 +91,15 @@ func parseStanza(c *caddy.Controller) (*doh, error) {
 		g.tlsConfig.ServerName = g.tlsServerName
 	}
 	for _, host := range toHosts {
-		pr, err := newProxy(host, g.tlsConfig)
+		pr, err := newProxy(host, g.transport)
 		if err != nil {
 			return nil, err
 		}
 		g.proxies = append(g.proxies, pr)
 	}
-
+	g.transport = &http.Transport{
+		IdleConnTimeout:    30 * time.Second,
+	}
 	return g, nil
 }
 

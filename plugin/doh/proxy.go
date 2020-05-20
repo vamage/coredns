@@ -2,11 +2,9 @@ package doh
 
 import (
 	"context"
-	"crypto/tls"
 	"encoding/base64"
 	"fmt"
 	"github.com/miekg/dns"
-	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"io/ioutil"
@@ -21,22 +19,16 @@ type Proxy struct {
 
 	// connection
 	client   *http.Client
-	dialOpts []grpc.DialOption
 }
 
 // newProxy returns a new proxy.
-func newProxy(addr string, tlsConfig *tls.Config) (*Proxy, error) {
+func newProxy(addr string, transport * http.Transport) (*Proxy, error) {
 	p := &Proxy{
 		addr: addr,
 	}
 
 
-	tr := &http.Transport{
-		MaxIdleConns:       10,
-		IdleConnTimeout:    30 * time.Second,
-		DisableCompression: true,
-	}
-	client := &http.Client{Transport: tr}
+	client := &http.Client{Transport: transport}
 
 	p.client = client
 
@@ -53,11 +45,14 @@ func (p *Proxy) query(ctx context.Context, req *dns.Msg) (*dns.Msg, error) {
 	}
 
 	query:= base64.StdEncoding.EncodeToString(msg)
-	fmt.Println(fmt.Sprintf("https://1.1.1.1/dns-query?dns=%s,%s, %v",query,req))
-	reply, err := p.client.Get(fmt.Sprintf("https://1.1.1.1/dns-query?dns=%s",query))
-	fmt.Println(reply)
-	fmt.Printf("%v\n", err)
-
+	request,err := http.NewRequestWithContext(ctx,"GET",
+		fmt.Sprintf("https://%s/dns-query?dns=%s", p.addr,query),
+		nil  )
+	request.Header.Add("accept","application/dns-message")
+	if err != nil {
+		return nil, err
+	}
+	reply, err := p.client.Do(request)
 	if err != nil {
 		// if not found message, return empty message with NXDomain code
 		if status.Code(err) == codes.NotFound {
@@ -69,12 +64,12 @@ func (p *Proxy) query(ctx context.Context, req *dns.Msg) (*dns.Msg, error) {
 	}
 	defer reply.Body.Close()
 	body, err := ioutil.ReadAll(reply.Body)
+	fmt.Printf("%s",body)
+
 	ret := new(dns.Msg)
 	if err := ret.Unpack(body); err != nil {
 		return nil, err
 	}
-	fmt.Printf("%v\n",ret)
-	fmt.Println(body)
 	rc, ok := dns.RcodeToString[ret.Rcode]
 	if !ok {
 		rc = strconv.Itoa(ret.Rcode)
@@ -83,6 +78,7 @@ func (p *Proxy) query(ctx context.Context, req *dns.Msg) (*dns.Msg, error) {
 	RequestCount.WithLabelValues(p.addr).Add(1)
 	RcodeCount.WithLabelValues(rc, p.addr).Add(1)
 	RequestDuration.WithLabelValues(p.addr).Observe(time.Since(start).Seconds())
+	fmt.Printf("%s",ret.Answer)
 
 	return ret, nil
 }
