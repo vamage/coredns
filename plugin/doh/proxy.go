@@ -37,7 +37,6 @@ func (c *dnsServiceClient) Query(ctx context.Context, req *pb.DnsPacket) (*pb.Dn
 
 
 	query:= base64.StdEncoding.EncodeToString(req.Msg)
-	fmt.Printf("https://%s/dns-query?dns=%s, %v\n", c.addr,query,&req)
 	request,err := http.NewRequestWithContext(ctx,"GET",
 		fmt.Sprintf("https://%s/dns-query?dns=%s", c.addr,query),
 		nil  )
@@ -51,7 +50,6 @@ func (c *dnsServiceClient) Query(ctx context.Context, req *pb.DnsPacket) (*pb.Dn
 	}
 	defer reply.Body.Close()
 	body, err := ioutil.ReadAll(reply.Body)
-	fmt.Printf("%s",body)
 
 	return &pb.DnsPacket{Msg: body}, nil
 }
@@ -76,7 +74,6 @@ func (p *Proxy) query(ctx context.Context, req *dns.Msg) (*dns.Msg, error) {
 	if err != nil {
 		return nil, err
 	}
-	fmt.Printf("req Q:%v\n",req)
 	reply, err := p.client.Query(ctx,&pb.DnsPacket{Msg: msg})
 	if err != nil {
 		return nil, err
@@ -99,7 +96,6 @@ func (p *Proxy) query(ctx context.Context, req *dns.Msg) (*dns.Msg, error) {
 	RequestCount.WithLabelValues(p.addr).Add(1)
 	RcodeCount.WithLabelValues(rc, p.addr).Add(1)
 	RequestDuration.WithLabelValues(p.addr).Observe(time.Since(start).Seconds())
-	fmt.Printf("%s",ret.Answer)
 
 	return ret, nil
 }

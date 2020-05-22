@@ -1,19 +1,14 @@
 package doh
 
 import (
-	"crypto/tls"
 	"fmt"
-	"net/http"
-	"time"
-
+	"github.com/caddyserver/caddy"
 	"github.com/coredns/coredns/core/dnsserver"
 	"github.com/coredns/coredns/plugin"
 	"github.com/coredns/coredns/plugin/metrics"
 	"github.com/coredns/coredns/plugin/pkg/parse"
 	"github.com/coredns/coredns/plugin/pkg/policy"
-	pkgtls "github.com/coredns/coredns/plugin/pkg/tls"
-
-	"github.com/caddyserver/caddy"
+	"net/http"
 )
 
 func init() { plugin.Register("doh", setup) }
@@ -83,23 +78,18 @@ func parseStanza(c *caddy.Controller) (*doh, error) {
 			return g, err
 		}
 	}
-
-	if g.tlsServerName != "" {
-		if g.tlsConfig == nil {
-			g.tlsConfig = new(tls.Config)
-		}
-		g.tlsConfig.ServerName = g.tlsServerName
+	transport := &http.Transport{
+		IdleConnTimeout:    defaultTimeout,
+		MaxIdleConnsPerHost: max,
 	}
 	for _, host := range toHosts {
-		pr, err := newProxy(host, g.transport)
+		pr, err := newProxy(host,transport)
 		if err != nil {
 			return nil, err
 		}
 		g.proxies = append(g.proxies, pr)
 	}
-	g.transport = &http.Transport{
-		IdleConnTimeout:    30 * time.Second,
-	}
+
 	return g, nil
 }
 
@@ -115,22 +105,6 @@ func parseBlock(c *caddy.Controller, g *doh) error {
 			ignore[i] = plugin.Host(ignore[i]).Normalize()
 		}
 		g.ignored = ignore
-	case "tls":
-		args := c.RemainingArgs()
-		if len(args) > 3 {
-			return c.ArgErr()
-		}
-
-		tlsConfig, err := pkgtls.NewTLSConfigFromArgs(args...)
-		if err != nil {
-			return err
-		}
-		g.tlsConfig = tlsConfig
-	case "tls_servername":
-		if !c.NextArg() {
-			return c.ArgErr()
-		}
-		g.tlsServerName = c.Val()
 	case "policy":
 		if !c.NextArg() {
 			return c.ArgErr()
