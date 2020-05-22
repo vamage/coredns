@@ -134,7 +134,7 @@ func (g *doh) isAllowedDomain(name string) bool {
 	return true
 }
 
-// List returns a set of proxies to be used for this client depending on the policy in p.
+// List returns a set of proxies to be used for this clientHTTP depending on the policy in p.
 func (g *doh) list() []*Proxy {
 	if len(g.p.List(g.proxies)) == 1 {
 		return g.p.List(g.proxies)[0].([]*Proxy)

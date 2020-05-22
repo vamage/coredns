@@ -3,14 +3,11 @@ package doh
 import (
 	"context"
 	"errors"
-	"google.golang.org/grpc"
+	"github.com/coredns/coredns/pb"
 	"testing"
 
-	"github.com/coredns/coredns/pb"
 
 	"github.com/miekg/dns"
-	"google.golang.org/doh"
-	"google.golang.org/doh/credentials"
 )
 
 func TestProxy(t *testing.T) {
@@ -28,11 +25,6 @@ func TestProxy(t *testing.T) {
 			p:       &Proxy{},
 			res:     nil,
 			wantErr: true,
-		},
-		"tls": {
-			p:       &Proxy{dialOpts: []grpc.DialOption{doh.WithTransportCredentials(credentials.NewTLS(nil))}},
-			res:     &dns.Msg{},
-			wantErr: false,
 		},
 	}
 	for name, tt := range tests {
@@ -62,6 +54,6 @@ type testServiceClient struct {
 	err       error
 }
 
-func (m testServiceClient) Query(ctx context.Context, in *pb.DnsPacket, opts ...grpc.CallOption) (*pb.DnsPacket, error) {
+func (m testServiceClient) Query(ctx context.Context, in *pb.DnsPacket) (*pb.DnsPacket, error) {
 	return m.dnsPacket, m.err
 }
