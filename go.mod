@@ -9,12 +9,12 @@ require (
 	github.com/DataDog/datadog-go v3.5.0+incompatible // indirect
 	github.com/Shopify/sarama v1.21.0 // indirect
 	github.com/apache/thrift v0.13.0 // indirect
-	github.com/aws/aws-sdk-go v1.30.24
+	github.com/aws/aws-sdk-go v1.30.29
 	github.com/caddyserver/caddy v1.0.5
 	github.com/cenkalti/backoff/v4 v4.0.2
 	github.com/dnstap/golang-dnstap v0.2.0
 	github.com/farsightsec/golang-framestream v0.0.0-20190425193708-fa4b164d59b8
-	github.com/golang/protobuf v1.4.1
+	github.com/golang/protobuf v1.4.2
 	github.com/gophercloud/gophercloud v0.9.0 // indirect
 	github.com/grpc-ecosystem/grpc-opentracing v0.0.0-20180507213350-8e809c8a8645
 	github.com/hashicorp/golang-lru v0.5.4 // indirect
@@ -29,16 +29,16 @@ require (
 	github.com/philhofer/fwd v1.0.0 // indirect
 	github.com/prometheus/client_golang v1.6.0
 	github.com/prometheus/client_model v0.2.0
-	github.com/prometheus/common v0.9.1
+	github.com/prometheus/common v0.10.0
 	github.com/prometheus/prometheus v2.5.0+incompatible
 	github.com/tinylib/msgp v1.1.2 // indirect
 	go.etcd.io/etcd v0.5.0-alpha.5.0.20200306183522-221f0cc107cb
 	go.uber.org/zap v1.14.1 // indirect
 	golang.org/x/crypto v0.0.0-20200323165209-0ec3e9974c59
 	golang.org/x/sys v0.0.0-20200420163511-1957bb5e6d1f
-	google.golang.org/api v0.23.0
+	google.golang.org/api v0.24.0
 	google.golang.org/grpc v1.29.1
-	gopkg.in/DataDog/dd-trace-go.v1 v1.23.2
+	gopkg.in/DataDog/dd-trace-go.v1 v1.24.0
 	k8s.io/api v0.18.2
 	k8s.io/apimachinery v0.18.2
 	k8s.io/client-go v0.18.2
